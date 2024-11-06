@@ -25,26 +25,31 @@ response = session.post(url, json=data, headers=headers)
 if response.status_code == 200:
     # Get the HTML response
     html_content = response.text
-    print("Original HTML Response received:")
+    print("Original HTML Response received:\n")
     #print(html_content)
     soup = BeautifulSoup(html_content, 'html.parser')
-    find_input = soup.findAll("form", attrs={"class":"navbar-brand"})
-    print(find_input)
-    
-    if "Please Login" in find_input:
-        print("Failed to log in.Please check your id and password")
-        # Parse the HTML with Beautiful Soup
-    else:
-        print("Login successful")
-        free_seats = soup.findAll("div", attrs={"class":"new"})
-        my_yellow = soup.findAll("div",attrs={"class":"I tentative writable"})
-        other_yellow = soup.findAll("div",attrs={"class":"I tentative"})
-        other_red = soup.findAll("div",attrs={"class":"E"})
-        black = soup.findAll("div",attrs={"class":"S"})
+    form_tags = soup.findAll("form", attrs={"class":"navbar-brand"})
+    # Ensure form_tag is not None 
+    if form_tags: 
+        login_detected = False 
+        for form_tag in form_tags: 
+            # Extract the text inside each form tag 
+            form_text = form_tag.get_text(strip=True) 
+            print(form_text) 
+            if "Please loginLog in" in form_text: 
+                login_detected = True 
+        if login_detected: 
+            print("Failed to log in. Please check your ID and password.") 
+        else: 
+            print("Login successful")
+            free_seats = soup.findAll("div", attrs={"class":"new"})
+            my_yellow = soup.findAll("div",attrs={"class":"I tentative writable"})
+            other_yellow = soup.findAll("div",attrs={"class":"I tentative"})
+            other_red = soup.findAll("div",attrs={"class":"E"})
+            black = soup.findAll("div",attrs={"class":"S"})
+    else: print('WARRNING! form_tag not found.\n The website of WWM library is updated.\n Pease post this issue to the "issues" column via github.\n')
 else:
     print(f"Error: {response.status_code}")
-
-
 
 """
 my uncheckin book:     class="I tentative writable"
