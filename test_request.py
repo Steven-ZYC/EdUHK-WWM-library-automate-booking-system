@@ -18,7 +18,7 @@ data = {
 <input type="password" id="NewUserPassword" name="NewUserPassword" class="form-control">
 """
 # Send the POST request
-response = session.post(url, json=data, headers=headers, verify=False)
+response = session.post(url, json=data, headers=headers)
 
 
 # Check if the request was successful
@@ -26,14 +26,17 @@ if response.status_code == 200:
     # Get the HTML response
     html_content = response.text
     print("Original HTML Response received:")
-    print(html_content)
-    if "please Login" in html_content:
+    #print(html_content)
+    soup = BeautifulSoup(html_content, 'html.parser')
+    find_input = soup.findAll("form", attrs={"class":"navbar-brand"})
+    print(find_input)
+    
+    if "Please Login" in find_input:
         print("Failed to log in.Please check your id and password")
         # Parse the HTML with Beautiful Soup
     else:
         print("Login successful")
-        soup = BeautifulSoup(html_content, 'html.parser')
-        free_seats = soup.findAll("div", atters={"class":"new"})
+        free_seats = soup.findAll("div", attrs={"class":"new"})
         my_yellow = soup.findAll("div",attrs={"class":"I tentative writable"})
         other_yellow = soup.findAll("div",attrs={"class":"I tentative"})
         other_red = soup.findAll("div",attrs={"class":"E"})
