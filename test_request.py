@@ -31,6 +31,7 @@ if response.status_code == 200:
         print("Failed to log in.Please check your id and password")
         # Parse the HTML with Beautiful Soup
     else:
+        print("Login successful")
         soup = BeautifulSoup(html_content, 'html.parser')
         free_seats = soup.findAll("div", atters={"class":"new"})
         my_yellow = soup.findAll("div",attrs={"class":"I tentative writable"})
