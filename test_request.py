@@ -2,8 +2,10 @@ import requests
 import getpass
 from bs4 import BeautifulSoup
 
+#initialise the crawler. set a session for remain the login status
+session = requests.Session()
 url = 'https://app.lib.eduhk.hk/booking/admin.php'
-headers = {"User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"}
+headers = {"User-Agent" : "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 Edg/130.0.0.0"}
 data = {
     'NewUserName': '',  
     'NewUserPassword': ''
@@ -14,7 +16,7 @@ data['NewUserName'] = name
 data['NeaUserPassword'] =  getpass.getpass("Enter your password: (NOTE:YOUR PASSWORD WOULD NOT DISPLAY ON THE SCREEN)")
 
 # Send the POST request
-response = requests.post(url, data=data, headers=headers)
+response = session.post(url, data=data, headers=headers)
 
 
 # Check if the request was successful
@@ -38,7 +40,6 @@ else:
 
 
 """
-
 my uncheckin book:     class="I tentative writable"
 my checkin book:       class="E writable"
 other uncheckin book:  class="I tentative" 
@@ -48,4 +49,19 @@ can be book:           class="new"
 
 """
 app.lib.eduhk.hk/booking/checkin_entry.php?area=
+
+    <ul class="dropdown-menu">
+        <li><a href="day.php?area=1">4/F Research Commons</a></li>
+        <li><a href="day.php?area=3">3/F Media Production Lab</a></li>
+        <li><a href="day.php?area=5">3/F Language Learning Room</a></li>
+        <li><a href="day.php?area=11">2/F STEM Room</a></li>
+        <li><a href="day.php?area=7">1/F Discussion Zone & Creative Arts Room </a></li>
+        <li><a href="day.php?area=43">1/F Discussion Booths</a></li>
+        <li><a href="day.php?area=46">1/F Study Booths</a></li>
+        <li><a href="day.php?area=6">G/F Quiet Zone &amp; PC Area</a></li>
+        <li><a href="day.php?area=4">G/F Lounge</a></li>
+        <li><a href="day.php?area=45">G/F Me Space</a></li>
+        <li><a href="day.php?area=44">G/F Discussion Booths</a></li>
+        <li><a href="day.php?area=10">LP/F EI Hub</a></li>
+    </ul>
 """
