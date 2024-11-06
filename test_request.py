@@ -2,21 +2,23 @@ import requests
 import getpass
 from bs4 import BeautifulSoup
 
+name = input("user name?(e.g s1234567)").lower()
+passwd =  getpass.getpass("Enter your password: (NOTE:YOUR PASSWORD WOULD NOT DISPLAY ON THE SCREEN)")
+
 #initialise the crawler. set a session for remain the login status
 session = requests.Session()
 url = 'https://app.lib.eduhk.hk/booking/admin.php'
 headers = {"User-Agent" : "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 Edg/130.0.0.0"}
 data = {
-    'NewUserName': '',  
-    'NewUserPassword': ''
+    'NewUserName': name,  
+    'NewUserPassword': passwd
 }
-
-name = input("user name?(e.g s1234567)").lower()
-data['NewUserName'] = name
-data['NeaUserPassword'] =  getpass.getpass("Enter your password: (NOTE:YOUR PASSWORD WOULD NOT DISPLAY ON THE SCREEN)")
-
+"""
+<input type="text" id="NewUserName" name="NewUserName" value="" class="form-control">
+<input type="password" id="NewUserPassword" name="NewUserPassword" class="form-control">
+"""
 # Send the POST request
-response = session.post(url, data=data, headers=headers)
+response = session.post(url, json=data, headers=headers, verify=False)
 
 
 # Check if the request was successful
@@ -25,17 +27,18 @@ if response.status_code == 200:
     html_content = response.text
     print("Original HTML Response received:")
     print(html_content)
-
-    # Parse the HTML with Beautiful Soup
-    soup = BeautifulSoup(html_content, 'html.parser')
-
-    free_seats = soup.findAll("div", atters={"class":"new"})
-    my_yellow = soup.findAll("div",attrs={"class":"I tentative writable"})
-    other_yellow = soup.findAll("div",attrs={"class":"I tentative"})
-    other_red = soup.findAll("div",attrs={"class":"E"})
+    if "please Login" in html_content:
+        print("Failed to log in.Please check your id and password")
+        # Parse the HTML with Beautiful Soup
+    else:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        free_seats = soup.findAll("div", atters={"class":"new"})
+        my_yellow = soup.findAll("div",attrs={"class":"I tentative writable"})
+        other_yellow = soup.findAll("div",attrs={"class":"I tentative"})
+        other_red = soup.findAll("div",attrs={"class":"E"})
+        black = soup.findAll("div",attrs={"class":"S"})
 else:
     print(f"Error: {response.status_code}")
-
 
 
 
