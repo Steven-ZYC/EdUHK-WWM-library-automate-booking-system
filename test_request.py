@@ -21,13 +21,12 @@ data = {
 # Send the POST request
 response = session.post(url, data=data, headers=headers)
 
-
 # Check if the request was successful
 if response.status_code == 200:
     # Get the HTML response
     html_content = response.text
     print("Original HTML Response received:\n")
-    #print(html_content)
+    
     soup = BeautifulSoup(html_content, 'html.parser')
     form_tags = soup.findAll("form", attrs={"class":"navbar-brand"})
     # Ensure form_tag is not None 
@@ -44,6 +43,10 @@ if response.status_code == 200:
             print(session.cookies)
             for cookie in session.cookies:
                 print(f"Name: {cookie.name}, Value: {cookie.value}, Expires: {cookie.expires}, HttpOnly: {cookie.has_nonstandard_attr('HttpOnly')}")
+            another_url = 'https://app.lib.eduhk.hk/booking/day.php?area=.&returl=https%3A%2F%2Fapp.lib.eduhk.hk%2Fbooking%2Fday.php%3Farea%3D.'
+            another_response = session.get(another_url)
+            for cookie in session.cookies:
+                print(f"Name: {cookie.name}, Value: {cookie.value}")
         else: 
             print("Login successful")
             free_seats = soup.findAll("div", attrs={"class":"new"})
