@@ -2,8 +2,8 @@ import requests
 import getpass
 from bs4 import BeautifulSoup
 
-name = input("user name?(e.g s1234567)").lower()
-passwd =  getpass.getpass("Enter your password: (NOTE:YOUR PASSWORD WOULD NOT DISPLAY ON THE SCREEN)")
+name = input("user name?(e.g s1234567)\n").lower()
+passwd =  getpass.getpass("Enter your password: (NOTE:YOUR PASSWORD WOULD NOT DISPLAY ON THE SCREEN)\n")
 
 #initialise the crawler. set a session for remain the login status
 session = requests.Session()
