@@ -8,7 +8,8 @@ passwd =  getpass.getpass("Enter your password: (NOTE:YOUR PASSWORD WOULD NOT DI
 #initialise the crawler. set a session for remain the login status
 session = requests.Session()
 url = 'https://app.lib.eduhk.hk/booking/admin.php'
-headers = {"User-Agent" : "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 Edg/130.0.0.0"}
+headers = {"User-Agent" : "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 Edg/130.0.0.0", 
+           "referer": "https://app.lib.eduhk.hk/booking/day.php?area=."}
 data = {
     'NewUserName': name,  
     'NewUserPassword': passwd
@@ -18,7 +19,7 @@ data = {
 <input type="password" id="NewUserPassword" name="NewUserPassword" class="form-control">
 """
 # Send the POST request
-response = session.post(url, json=data, headers=headers)
+response = session.post(url, data=data, headers=headers)
 
 
 # Check if the request was successful
@@ -39,7 +40,10 @@ if response.status_code == 200:
             if "Please loginLog in" in form_text: 
                 login_detected = True 
         if login_detected: 
-            print("Failed to log in. Please check your ID and password.") 
+            print("\nFailed to log in. Please check your ID and password.") 
+            print(session.cookies)
+            for cookie in session.cookies:
+                print(f"Name: {cookie.name}, Value: {cookie.value}, Expires: {cookie.expires}, HttpOnly: {cookie.has_nonstandard_attr('HttpOnly')}")
         else: 
             print("Login successful")
             free_seats = soup.findAll("div", attrs={"class":"new"})
