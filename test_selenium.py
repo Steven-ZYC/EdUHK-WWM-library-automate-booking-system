@@ -1,43 +1,100 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import time
+import os
 
-# Initialize the Edge WebDriver
-driver = webdriver.Edge()
-def login(username,password):
-    driver.get('https://app.lib.eduhk.hk/booking/admin.php')
-    time.sleep(1)  # Wait for the page to load
+class LibraryBooking:
+    def __init__(self, username, password):
+        # Setup Chrome options for headless mode (optional)
+        self.chrome_options = webdriver.ChromeOptions()
+        # Uncomment below if you want to run without opening browser
+        # self.chrome_options.add_argument("--headless")
+        
+        # Setup webdriver
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()), 
+            options=self.chrome_options
+        )
+        
+        self.username = username
+        self.password = password
+        self.base_url = "https://app.lib.eduhk.hk/booking/admin.php"
 
-    # Fill in the login form
-    driver.find_element(By.ID, 'NewUserName').send_keys(username)  # Replace with your username
-    driver.find_element(By.ID, 'NewUserPassword').send_keys(password + Keys.RETURN)  # Replace with your password
+    def login(self):
+        try:
+            # Navigate to login page
+            self.driver.get(self.base_url)
+            
+            # Wait and find username field
+            username_field = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, "NewUserName"))
+            )
+            username_field.send_keys(self.username)
+            
+            # Find and fill password field
+            password_field = self.driver.find_element(By.ID, "NewUserPassword")
+            password_field.send_keys(self.password + Keys.RETURN)
+            
+            # Find and click login button
+            #login_button = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+            #login_button.click()
+            
+            # Wait for login to complete
+            WebDriverWait(self.driver, 10).until(
+                EC.url_changes(self.base_url)
+            )
+            
+            print("Login successful!")
+            return True
+        
+        except Exception as e:
+            print(f"Login failed.Please check your username and password: {e}")
+            return False
 
-    time.sleep(1)  # Wait
+    def book(self):
+        try:
+            # Navigate to booking page (adjust URL if different)
+            self.driver.get(f"{self.base_url}?area=gf_computer_zone")
+            
+            # Find and click available seat
+            available_seat = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, ".seat-available"))
+            )
+            available_seat.click()
+            
+            # Confirm booking
+            confirm_button = self.driver.find_element(By.ID, "confirm-booking")
+            confirm_button.click()
+            
+            print("Seat booked successfully!")
+            return True
+        
+        except Exception as e:
+            print(f"Booking failed: {e}")
+            return False
 
-    
-    
-    login_button = driver.find_element(By.CSS_SELECTOR, '[class="btn btn-default"]')
-    please_login_text = driver.find_element(By.CLASS_NAME, 'navbar-brand').text
-    
-    print(f"button{login_button}")
-    print(f"text{please_login_text}")
-    if "Log in" in login_button.text and "Please login" in please_login_text:
-        print("\nFailed to log in. Please check your ID and password.")
-        return False
-    else:
-        # If we can't find these elements, login was successful
-        print("\nLogin successful!")
-        return True
-    
-    driver.quit()
+    def close(self):
+        self.driver.quit()
 
-if __name__ == '__main__':
-    success = login("s1234567","151")
-    if success:
-        print("Test passed - Login successful")
-    else:
-        print("Test failed - Could not login")
+# For direct script execution
+def main():
+    username = input("Enter your EdUHK username: ")
+    password = input("Enter your EdUHK password: ")
     
+    booking = LibraryBooking(username, password)
+    
+    try:
+        if booking.login():
+            booking.book_gf_computer_zone()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        booking.close()
+
+if __name__ == "__main__":
+    main()
