@@ -1,20 +1,21 @@
 import argparse
 from test_selenium import LibraryBooking
+import time
 
 def main():
     #input id & password
     username = input("Enter your EdUHK username: ")
     password = input("Enter your EdUHK password: ")
-    booking = LibraryBooking(username, password)
-    
-    
+   
+    #Inqire the area  
+    area = input("There are there areas that you can choose to book,\nplease press the number below to choose\n 1: '4/F Research Commons A'\n 2:'4/F Research Commons B'\n 3: 'G/F Quiet Zone & PC Area'\n")
 
+    booking = LibraryBooking(username, password) 
     try:
         if booking.login():
 
-            #area
+            #Choose area
             while True:
-                area = input("There are there areas that you can choose to book,\nplease press the number below to choose\n 1: '4/F Research Commons A'\n 2:'4/F Research Commons B'\n 3: 'G/F Quiet Zone & PC Area'")
                 if area == 1:
                     booking.book_seat('4/F Research Commons A')
                     break
@@ -25,7 +26,8 @@ def main():
                     booking.book_seat('G/F Quiet Zone & PC Area')
                     break
                 else: 
-                    print("Incorrect input.")
+                    print("\nIncorrect input of area.\n")
+                    break
             
             # Check current bookings
             my_bookings = booking.check_my_bookings()
