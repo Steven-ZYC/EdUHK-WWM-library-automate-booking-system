@@ -2,40 +2,39 @@ import argparse
 from test_selenium import LibraryBooking
 
 def main():
-    parser = argparse.ArgumentParser(description="EdUHK Library Booking CLI")
+    #input id & password
+    username = input("Enter your EdUHK username: ")
+    password = input("Enter your EdUHK password: ")
+    booking = LibraryBooking(username, password)
     
-    parser.add_argument('-u', '--username', 
-                        help='EdUHK Network Username', 
-                        required=True)
-    parser.add_argument('-p', '--password', 
-                        help='EdUHK Network Password', 
-                        required=True)
-    parser.add_argument('-a', '--area', 
-                        help='Booking Area (default: G/F Computer Zone)', 
-                        default='gf_computer_zone')
-    parser.add_argument('--dry-run', 
-                        action='store_true', 
-                        help='Simulate booking without actual booking')
     
-    args = parser.parse_args()
-    
-    print("EdUHK Library Booking System")
-    print("----------------------------")
-    
-    booking = LibraryBooking(args.username, args.password)
-    
+
     try:
-        # Login
         if booking.login():
-            print(f"Attempting to book seat in {args.area}")
+
+            #area
+            while True:
+                area = input("There are there areas that you can choose to book,\nplease press the number below to choose\n 1: '4/F Research Commons A'\n 2:'4/F Research Commons B'\n 3: 'G/F Quiet Zone & PC Area'")
+                if area == 1:
+                    booking.book_seat('4/F Research Commons A')
+                    break
+                elif area == 2:
+                    booking.book_seat('4/F Research Commons B')
+                    break
+                elif area == 3:
+                    booking.book_seat('G/F Quiet Zone & PC Area')
+                    break
+                else: 
+                    print("Incorrect input.")
             
-            if not args.dry_run:
-                booking.book_gf_computer_zone()
-            else:
-                print("[DRY RUN] Booking simulation completed")
+            # Check current bookings
+            my_bookings = booking.check_my_bookings()
+            if my_bookings:
+                print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
+                print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
     
     except Exception as e:
-        print(f"Booking failed: {e}")
+        print(f"An error occurred: {e}")
     
     finally:
         booking.close()

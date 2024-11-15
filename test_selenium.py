@@ -10,18 +10,10 @@ import os
 
 class LibraryBooking:
     AREAS = {
-        '4/F Research Commons': 1,
-        '3/F Media Production Lab': 3,
-        '3/F Language Learning Room': 5,
-        '2/F STEM Room': 11,
-        '1/F Discussion Zone & Creative Arts Room': 7,
-        '1/F Discussion Booths': 43,
-        '1/F Study Booths': 46,
+        '4/F Research Commons A': 1,
+        '4/F Research Commons B': 2,
         'G/F Quiet Zone & PC Area': 6,
-        'G/F Lounge': 4,
-        'G/F Me Space': 45,
-        'G/F Discussion Booths': 44,
-        'LP/F EI Hub': 10
+        'G/F Discussion Booths': 44
     }
 
 
@@ -174,10 +166,6 @@ class LibraryBooking:
         except Exception as e:
             print(f"Error checking bookings: {e}")
             return None
-
-    def close(self):
-        self.driver.quit()
-
     
 
     def close(self):
