@@ -58,16 +58,16 @@ class LibraryBooking:
             print(f"Login failed.Please check your username and password: \n{e}")
             return False
 
-    def book(self):
+    def book(self,area_num,room):
         try:
             # Navigate to booking page (adjust URL if different)
-            self.driver.get(f"{self.base_url}?area=gf_computer_zone")
+            self.driver.get(f"{self.base_url}?area={area_num}&room={room}")
             
             # Find and click available seat
-            available_seat = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, ".seat-available"))
+            book_available_seat = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, "class='new'"))
             )
-            available_seat.click()
+            book_available_seat.click()
             
             # Confirm booking
             confirm_button = self.driver.find_element(By.ID, "confirm-booking")
