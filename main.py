@@ -1,31 +1,47 @@
-from network import Seat, Booking
+import argparse
+from test_selenium import LibraryBooking
 
 def main():
-    #area = input('Please choose the area that you want to book. "a"for reasearch zone A, "b"for reachearch zone B, "s"for pc workstation\n')
-    seat_number = input("Enter seat number (e.g., A1).\nYou can refer to https://www.lib.eduhk.hk/facilities-booking: ")
-    seat = Seat(seat_number)
-    #area = Seat(seat)
-    booking = Booking(seat)
-
-    action = input("Do you want to book or cancel? (b/c): ").strip().lower()
-
-    if action == 'b':
-        if booking.book_seat():
-            print(f"Seat {seat.seat_number} booked successfully.")
-        else:
-            print(f"Seat {seat.seat_number} is already booked.")
-    elif action == 'c':
-        if booking.cancel_booking():
-            print(f"Booking for seat {seat.seat_number} canceled.")
-        else:
-            print(f"No booking found for seat {seat.seat_number}.")
-    else:
-        print("Invalid action. Please enter 'b' to book or 'c' to cancel.")
-
+    parser = argparse.ArgumentParser(description="EdUHK Library Booking CLI")
+    
+    parser.add_argument('-u', '--username', 
+                        help='EdUHK Network Username', 
+                        required=True)
+    parser.add_argument('-p', '--password', 
+                        help='EdUHK Network Password', 
+                        required=True)
+    parser.add_argument('-a', '--area', 
+                        help='Booking Area (default: G/F Computer Zone)', 
+                        default='gf_computer_zone')
+    parser.add_argument('--dry-run', 
+                        action='store_true', 
+                        help='Simulate booking without actual booking')
+    
+    args = parser.parse_args()
+    
+    print("EdUHK Library Booking System")
+    print("----------------------------")
+    
+    booking = LibraryBooking(args.username, args.password)
+    
+    try:
+        # Login
+        if booking.login():
+            print(f"Attempting to book seat in {args.area}")
+            
+            if not args.dry_run:
+                booking.book_gf_computer_zone()
+            else:
+                print("[DRY RUN] Booking simulation completed")
+    
+    except Exception as e:
+        print(f"Booking failed: {e}")
+    
+    finally:
+        booking.close()
 
 if __name__ == "__main__":
     main()
-
 
 
 

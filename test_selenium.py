@@ -10,8 +10,10 @@ import os
 
 class LibraryBooking:
     def __init__(self, username, password):
-        # Setup Chrome options for headless mode (optional)
+        # Setup Chrome
         self.chrome_options = webdriver.ChromeOptions()
+
+        # options for headless mode (optional)
         # Uncomment below if you want to run without opening browser
         # self.chrome_options.add_argument("--headless")
         
@@ -31,7 +33,7 @@ class LibraryBooking:
             self.driver.get(self.base_url)
             
             # Wait and find username field
-            username_field = WebDriverWait(self.driver, 10).until(
+            username_field = WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.ID, "NewUserName"))
             )
             username_field.send_keys(self.username)
@@ -45,7 +47,7 @@ class LibraryBooking:
             #login_button.click()
             
             # Wait for login to complete
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, 5).until(
                 EC.url_changes(self.base_url)
             )
             
@@ -53,7 +55,7 @@ class LibraryBooking:
             return True
         
         except Exception as e:
-            print(f"Login failed.Please check your username and password: {e}")
+            print(f"Login failed.Please check your username and password: \n{e}")
             return False
 
     def book(self):
@@ -82,7 +84,10 @@ class LibraryBooking:
         self.driver.quit()
 
 # For direct script execution
-def main():
+
+   
+
+if __name__ == "__main__":
     username = input("Enter your EdUHK username: ")
     password = input("Enter your EdUHK password: ")
     
@@ -95,6 +100,3 @@ def main():
         print(f"An error occurred: {e}")
     finally:
         booking.close()
-
-if __name__ == "__main__":
-    main()
