@@ -84,9 +84,6 @@ class LibraryBooking:
         self.driver.quit()
 
 # For direct script execution
-
-   
-
 if __name__ == "__main__":
     username = input("Enter your EdUHK username: ")
     password = input("Enter your EdUHK password: ")
