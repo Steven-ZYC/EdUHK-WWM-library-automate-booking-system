@@ -142,13 +142,56 @@ class LibraryBooking:
     def check_my_bookings(self):
         """
         Check current user's bookings
-        
         :return: List of current bookings
         """
+
         try:
             # Navigate to my bookings
-            self.driver.get(f"{self.url}my_bookings.php")
+            element =  WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located((By.XPATH, "//*[@id='bs-example-navbar-collapse-1']/ul/li[5]/a"))
+                )
+            mybooking = self.driver.find_element(By.XPATH, "//*[@id='bs-example-navbar-collapse-1']/ul/li[5]/a")
+            mybooking.click()
+            time.sleep(8)
+            
+            # wait for the table loading
+            bookings_table = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, "report_table"))
+                )
+             
+            # look for rows and skip the first element
+            booking_rows = bookings_table.find_elements(By.TAG_NAME, "tr")[1:]  
 
+            bookings = []
+
+            for row in booking_rows:
+                try:
+                    cells = row.find_elements(By.TAG_NAME, "td")
+                    cancel_link = cells[-1].find_element(By.TAG_NAME, "a") if cells[-1].find_elements(By.TAG_NAME, "a") else None
+                    
+                    # Create the detailed dictionary  
+                    booking_details = {
+                        'start_time': cells[0].text.strip(),
+                        'end_time': cells[1].text.strip(),
+                        'duration': cells[2].text.strip(),
+                        'area': cells[3].text.strip(),
+                        'location': cells[4].text.strip(),
+                        'status': cells[5].text.strip(),
+                        'last_updated': cells[6].text.strip(),
+                        'cancel_link': cancel_link.get_attribute('href') if cancel_link else None,
+                        'cancel_confirmation_text': cancel_link.get_attribute('onclick') if cancel_link else None
+                    }
+
+                    bookings.append(booking_details)
+
+                except Exception as row_error:
+                    print(f"Error exist when prosess the row: {row_error}")
+            return {
+            'bookings': bookings,
+            'total_bookings': len(bookings)
+            }
+
+            """
             # Find bookings with specific classes
             my_uncheckin_bookings = self.driver.find_elements(
                 By.CLASS_NAME, "I.tentative.writable"
@@ -156,13 +199,13 @@ class LibraryBooking:
             my_checkin_bookings = self.driver.find_elements(
                 By.CLASS_NAME, "E.writable"
             )
-
+            
             # Combine and return bookings
             return {
                 'unchecked_bookings': my_uncheckin_bookings,
                 'checked_bookings': my_checkin_bookings
             }
-
+            """
         except Exception as e:
             print(f"Error checking bookings: {e}")
             return None
@@ -175,15 +218,12 @@ class LibraryBooking:
 if __name__ == "__main__":
     username = input("Enter your EdUHK username: ")
     password = input("Enter your EdUHK password: ")
-    
+
     booking = LibraryBooking(username, password)
-    
+    booking.book_seat('G/F Quiet Zone & PC Area')
+
     try:
         if booking.login():
-
-            # Book a seat in Quiet Zone & PC Area
-            booking.book_seat('G/F Quiet Zone & PC Area')
-            
             # Check current bookings
             my_bookings = booking.check_my_bookings()
             if my_bookings:

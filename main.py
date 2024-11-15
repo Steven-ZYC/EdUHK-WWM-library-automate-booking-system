@@ -30,13 +30,27 @@ def main():
                     break
             
             # Check current bookings
-            my_bookings = booking.check_my_bookings()
-            if my_bookings:
-                print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
-                print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
+            if booking.login():
+            
+                my_bookings = booking.check_my_bookings()
+            
+                if my_bookings:
+                    print("\n--- All your current bookings ---")
+                    print(f"Total: {my_bookings['total_bookings']}")
+                    
+                    # Detailed bookings
+                    for idx, booking in enumerate(my_bookings['bookings'], 1):
+                        print(f"\nBooking {idx}:")
+                        print(f"Start time: {booking['start_time']} - {booking['end_time']}")
+                        print(f"Area: {booking['area']}")
+                        print(f"Location: {booking['location']}")
+                        print(f"Status: {booking['status']}")
+                        print(f"Latest update: {booking['last_updated']}")
+                        if booking['cancel_link']:
+                            print(f"cancel link: {booking['cancel_link']}")
     
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred in main program: {e}")
     
     finally:
         booking.close()
