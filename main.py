@@ -44,8 +44,6 @@ if __name__ == "__main__":
     main()
 
 
-
-
 """
 If you forget your EdUHK Network Password, please contact "https://www.eduhk.hk/ocio/contact-us" for assistance.
 """

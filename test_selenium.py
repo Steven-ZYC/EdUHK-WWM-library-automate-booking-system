@@ -9,12 +9,27 @@ import time
 import os
 
 class LibraryBooking:
+    AREAS = {
+        '4/F Research Commons': 1,
+        '3/F Media Production Lab': 3,
+        '3/F Language Learning Room': 5,
+        '2/F STEM Room': 11,
+        '1/F Discussion Zone & Creative Arts Room': 7,
+        '1/F Discussion Booths': 43,
+        '1/F Study Booths': 46,
+        'G/F Quiet Zone & PC Area': 6,
+        'G/F Lounge': 4,
+        'G/F Me Space': 45,
+        'G/F Discussion Booths': 44,
+        'LP/F EI Hub': 10
+    }
+
+
     def __init__(self, username, password):
         # Setup Chrome
         self.chrome_options = webdriver.ChromeOptions()
 
-        # options for headless mode (optional)
-        # Uncomment below if you want to run without opening browser
+        # options for headless mode (i.e. uncomment run without opening browser)
         # self.chrome_options.add_argument("--headless")
         
         # Setup webdriver
@@ -22,63 +37,117 @@ class LibraryBooking:
             service=Service(ChromeDriverManager().install()), 
             options=self.chrome_options
         )
-        
+        # Setup username passwd urls
         self.username = username
         self.password = password
-        self.base_url = "https://app.lib.eduhk.hk/booking/admin.php"
+        self.url = "https://app.lib.eduhk.hk/booking/"
+        self.url_login = self.url + "admin.php"
+        self.books = self.url + "edit_entry.php?"
 
     def login(self):
+        """
+        Let user input username and password 
+        """
         try:
             # Navigate to login page
-            self.driver.get(self.base_url)
+            self.driver.get(self.url_login)
             
             # Wait and find username field
-            username_field = WebDriverWait(self.driver, 5).until(
+            username_field = WebDriverWait(self.driver, 3).until(
                 EC.presence_of_element_located((By.ID, "NewUserName"))
             )
+            username_field.clear()  # Clear field before entering new data
             username_field.send_keys(self.username)
             
             # Find and fill password field
             password_field = self.driver.find_element(By.ID, "NewUserPassword")
+            password_field.clear()  # Clear field before entering new data
             password_field.send_keys(self.password + Keys.RETURN)
-            
-            # Find and click login button
-            #login_button = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
-            #login_button.click()
-            
+                
             # Wait for login to complete
-            WebDriverWait(self.driver, 5).until(
-                EC.url_changes(self.base_url)
+            WebDriverWait(self.driver, 1).until(
+                EC.url_changes(self.url_login)
             )
-            
+                
             print("Login successful!")
             return True
-        
+            
         except Exception as e:
-            print(f"Login failed.Please check your username and password: \n{e}")
+            print(f'\nLogin failed. \nPlease check your username and password. {e}\nIf you forget your EdUHK Network Password, please contact "https://www.eduhk.hk/ocio/contact-us" for assistance.\n')
             return False
 
-    def book(self,area_num,room):
-        try:
-            # Navigate to booking page (adjust URL if different)
-            self.driver.get(f"{self.base_url}?area={area_num}&room={room}")
-            
-            # Find and click available seat
-            book_available_seat = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "class='new'"))
-            )
-            book_available_seat.click()
-            
-            # Confirm booking
-            confirm_button = self.driver.find_element(By.ID, "confirm-booking")
-            confirm_button.click()
-            
-            print("Seat booked successfully!")
-            return True
+    def find_available_seat(self, area_name):
+        """
+        Find an available seat in the specified area
         
+        :param area_name: Name of the area to book
+        :return: WebElement of the available seat or None
+        """
+        try:
+            # Get area number from the dictionary
+            area_num = self.AREAS.get(area_name)
+            if not area_num:
+                print(f"Invalid area name: {area_name}")
+                return None
+
+            # Navigate to the area's day view
+            self.driver.get(f"{self.url}day.php?area={area_num}")
+
+            # Find available seats (with class 'new')
+            available_seats = self.driver.find_elements(By.CLASS_NAME, "new")
+            
+            if not available_seats:
+                print(f"No available seats in {area_name}")
+                return None
+
+            # Return the first available seat
+            return available_seats[0]
+
+        except Exception as e:
+            print(f"Error finding available seat: {e}")
+            return None
+
+    def book_seat(self, area_name):
+        """
+        Book a seat in the specified area
+        
+        :param area_name: Name of the area to book
+        :return: Boolean indicating booking success
+        """
+        try:
+            # Find an available seat
+            available_seat = self.find_available_seat(area_name)
+            
+            if not available_seat:
+                return False
+
+            # Click on the available seat
+            available_seat.click()
+
+            # Wait for booking form to load
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, "edit_entry"))
+            )
+
+            # Submit the booking
+            submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[type='submit']")
+            submit_button.click()
+
+            # Wait for confirmation
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "success"))
+            )
+
+            print(f"Successfully booked a seat in {area_name}")
+            return True
+
         except Exception as e:
             print(f"Booking failed: {e}")
+            # Take a screenshot for debugging
+            self.driver.save_screenshot("booking_error.png")
             return False
+
+    
 
     def close(self):
         self.driver.quit()
@@ -92,8 +161,18 @@ if __name__ == "__main__":
     
     try:
         if booking.login():
-            booking.book_gf_computer_zone()
+
+            # Book a seat in Quiet Zone & PC Area
+            booking.book_seat('G/F Quiet Zone & PC Area')
+            
+            # Check current bookings
+            my_bookings = booking.check_my_bookings()
+            if my_bookings:
+                print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
+                print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
+    
     except Exception as e:
         print(f"An error occurred: {e}")
+    
     finally:
         booking.close()
