@@ -147,6 +147,37 @@ class LibraryBooking:
             self.driver.save_screenshot("booking_error.png")
             return False
 
+    def check_my_bookings(self):
+        """
+        Check current user's bookings
+        
+        :return: List of current bookings
+        """
+        try:
+            # Navigate to my bookings
+            self.driver.get(f"{self.url}my_bookings.php")
+
+            # Find bookings with specific classes
+            my_uncheckin_bookings = self.driver.find_elements(
+                By.CLASS_NAME, "I.tentative.writable"
+            )
+            my_checkin_bookings = self.driver.find_elements(
+                By.CLASS_NAME, "E.writable"
+            )
+
+            # Combine and return bookings
+            return {
+                'unchecked_bookings': my_uncheckin_bookings,
+                'checked_bookings': my_checkin_bookings
+            }
+
+        except Exception as e:
+            print(f"Error checking bookings: {e}")
+            return None
+
+    def close(self):
+        self.driver.quit()
+
     
 
     def close(self):
