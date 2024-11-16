@@ -2,9 +2,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import time
 import os
 
@@ -19,15 +21,18 @@ class LibraryBooking:
 
     def __init__(self, username, password):
         # Setup Chrome
-        self.chrome_options = webdriver.ChromeOptions()
-
+        #self.chrome_options = webdriver.ChromeOptions()
+        #self.chrome_options.add_argument("--disable-dev-shm-usage")
         # options for headless mode (i.e. uncomment run without opening browser)
         # self.chrome_options.add_argument("--headless")
         
+        # Setup Edge
+        self.edge_options = webdriver.EdgeOptions()
+        
         # Setup webdriver
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), 
-            options=self.chrome_options
+        self.driver = webdriver.Edge(
+            service=Service(EdgeChromiumDriverManager().install()), 
+            options=self.edge_options
         )
         # Setup username passwd urls
         self.username = username
@@ -60,7 +65,7 @@ class LibraryBooking:
             WebDriverWait(self.driver, 1).until(
                 EC.url_changes(self.url_login)
             )
-                
+            time.sleep(2)    
             print("Login successful!")
             return True
             
@@ -68,6 +73,27 @@ class LibraryBooking:
             print(f'\nLogin failed. \nPlease check your username and password. {e}\nIf you forget your EdUHK Network Password, please contact "https://www.eduhk.hk/ocio/contact-us" for assistance.\n')
             return False
 
+    def redirect_to_area(self, area_name):
+        """
+        Book a seat in the specified area
+        
+        :param area_name: Name of the area to book
+        :return: Boolean indicating booking success
+        """
+    
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="bs-example-navbar-collapse-1"]/ul/li[1]/a'))
+            )
+            navbar_button = self.driver.find_element(By.XPATH, '//*[@id="bs-example-navbar-collapse-1"]/ul/li[1]/a')
+            actions = ActionChains(self.driver)
+            actions.move_to_element(navbar_button).perform()
+            navbar_button.click()
+
+        except Exception as e:
+            print(f" An error occurred in redirecting to choose an area：{e}")  
+
+     
     def find_available_seat(self, area_name):
         """
         Find an available seat in the specified area
@@ -76,11 +102,28 @@ class LibraryBooking:
         :return: WebElement of the available seat or None
         """
         try:
+            """
+            # Find bookings with specific classes
+            my_uncheckin_bookings = self.driver.find_elements(
+                By.CLASS_NAME, "I.tentative.writable"
+            )
+            my_checkin_bookings = self.driver.find_elements(
+                By.CLASS_NAME, "E.writable"
+            )
+            
+            # Combine and return bookings
+            return {
+                'unchecked_bookings': my_uncheckin_bookings,
+                'checked_bookings': my_checkin_bookings
+            }
+            """
             # Get area number from the dictionary
             area_num = self.AREAS.get(area_name)
             if not area_num:
                 print(f"Invalid area name: {area_name}")
                 return None
+            
+            time.sleep(3)
 
             # Navigate to the area's day view
             self.driver.get(f"{self.url}day.php?area={area_num}")
@@ -98,46 +141,6 @@ class LibraryBooking:
         except Exception as e:
             print(f"Error finding available seat: {e}")
             return None
-
-    def book_seat(self, area_name):
-        """
-        Book a seat in the specified area
-        
-        :param area_name: Name of the area to book
-        :return: Boolean indicating booking success
-        """
-        try:
-            # Find an available seat
-            available_seat = self.find_available_seat(area_name)
-            
-            if not available_seat:
-                return False
-
-            # Click on the available seat
-            available_seat.click()
-
-            # Wait for booking form to load
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.ID, "edit_entry"))
-            )
-
-            # Submit the booking
-            submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[type='submit']")
-            submit_button.click()
-
-            # Wait for confirmation
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "success"))
-            )
-
-            print(f"Successfully booked a seat in {area_name}")
-            return True
-
-        except Exception as e:
-            print(f"Booking failed: {e}")
-            # Take a screenshot for debugging
-            self.driver.save_screenshot("booking_error.png")
-            return False
 
     def check_my_bookings(self):
         """
@@ -191,21 +194,7 @@ class LibraryBooking:
             'total_bookings': len(bookings)
             }
 
-            """
-            # Find bookings with specific classes
-            my_uncheckin_bookings = self.driver.find_elements(
-                By.CLASS_NAME, "I.tentative.writable"
-            )
-            my_checkin_bookings = self.driver.find_elements(
-                By.CLASS_NAME, "E.writable"
-            )
             
-            # Combine and return bookings
-            return {
-                'unchecked_bookings': my_uncheckin_bookings,
-                'checked_bookings': my_checkin_bookings
-            }
-            """
         except Exception as e:
             print(f"Error checking bookings: {e}")
             return None
@@ -216,22 +205,25 @@ class LibraryBooking:
 
 # For direct script execution
 if __name__ == "__main__":
-    username = input("Enter your EdUHK username: ")
-    password = input("Enter your EdUHK password: ")
-
-    booking = LibraryBooking(username, password)
-    booking.book_seat('G/F Quiet Zone & PC Area')
-
+    
     try:
+        username = input("Enter your EdUHK username: ")
+        password = input("Enter your EdUHK password: ")
+
+        booking = LibraryBooking(username, password)
+        booking.redirect_to_area('G/F Quiet Zone & PC Area')
+
         if booking.login():
             # Check current bookings
-            my_bookings = booking.check_my_bookings()
+           """ 
+           my_bookings = booking.check_my_bookings()
             if my_bookings:
                 print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
                 print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
+            """
     
     except Exception as e:
         print(f"An error occurred: {e}")
     
-    finally:
-        booking.close()
+    #finally:
+        #booking.close()
