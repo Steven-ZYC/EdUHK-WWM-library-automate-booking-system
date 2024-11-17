@@ -147,15 +147,12 @@ class LibraryBooking:
         try:
             # Get area number from the dictionary
             area_num = self.AREAS.get(area_name)
-            if not area_num:
-                print(f"Invalid area name: {area_name}")
-                return None
 
             # Navigate to the area's day view
             self.driver.get(f"{self.url}day.php?area={area_num}")
 
             # Wait for the table to load
-            table = WebDriverWait(self.driver, 10).until(
+            table = WebDriverWait(self.driver, 1).until(
                 EC.presence_of_element_located((By.XPATH, "//table[@class='dwm_main_6 footable footable-1 breakpoint-lg' and @id='day_main']"))
             )
 
@@ -172,11 +169,18 @@ class LibraryBooking:
             for row in data_rows:
                 seat_name = row.find_element(By.XPATH, ".//td[contains(@class, 'row_labels')]").text
                 available_slots = []
+                booking_links = []
                 for i, slot in enumerate(row.find_elements(By.XPATH, ".//td[not(contains(@class, 'row_labels'))]")):
                     if 'new' in slot.get_attribute('class'):
                         available_slots.append(time_slots[i])
+                        # Extract the booking link
+                        link_element = slot.find_element(By.XPATH, ".//a")
+                        booking_links.append(link_element.get_attribute("href"))
                 if available_slots:
-                    available_seats[seat_name] = available_slots
+                    available_seats[seat_name] = {
+                        "time_slots": available_slots,
+                        "booking_links": booking_links
+                    }
 
             if not available_seats:
                 print("No available seats found.")
@@ -188,6 +192,26 @@ class LibraryBooking:
             print(f"Error finding available seats: {e}")
             return None
     
+    def booking(self,seat_name,seat_time):
+        """
+        Book the specified seat at the given time slot.
+        
+        :param seat_name: Name of the seat to book
+        :param time_slot: Time slot to book
+        """
+        try:
+            time_slot = seat_details["time_slots"]
+            # Find the booking link for the seat and time slot
+            booking_link = self.get_booking_link(seat_name, seat_details)
+            
+            # Navigate to the booking link and perform the booking
+            self.driver.get(booking_link)
+            # Add your booking logic here
+            print(f"Booked seat {seat_name} at {time_slot}")
+        
+        except Exception as e:
+            print(f"Error booking seat: {e}")
+
     def check_my_bookings(self):
         """
         Check current user's bookings
@@ -245,7 +269,6 @@ class LibraryBooking:
             print(f"Error checking bookings: {e}")
             return None
     
-
     def close(self):
         self.driver.quit()
 
@@ -264,14 +287,21 @@ if __name__ == "__main__":
         available_seats = booking.find_available_seat('G/F Quiet Zone & PC Area')
             
         if available_seats:
+            max_output = 10
+            
             print("Available seats:")
-            for seat, time_slots in available_seats.items():
-                print(f"Seat: {seat}, Available time slots: {', '.join(time_slots)}")
+            for i, (seat, details) in enumerate(available_seats.items(), start=1):
+                print(f"Seat: {seat}")
+                print(f"Available time slots: {', '.join(details['time_slots'][1:])}")
+                print()
+                
+                if i == max_output:
+                    break
+
         else:
             print("No available seats found.")
         
-       
-        time.sleep(5)
+        time.sleep(3)
     except Exception as e:
         print(f"An error occurred: {e}")
     
