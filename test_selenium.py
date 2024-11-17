@@ -21,20 +21,25 @@ class LibraryBooking:
 
     def __init__(self, username, password):
         # Setup Chrome
-        self.chrome_options = webdriver.ChromeOptions()
+        self.options = webdriver.ChromeOptions()
 
         # Setup Edge
-        #self.edge_options = webdriver.EdgeOptions()
+        # self.options = webdriver.EdgeOptions()
 
-        #self.chrome_options.add_argument("--disable-dev-shm-usage")
+        # self.options.add_argument("--disable-dev-shm-usage")
         # options for headless mode (i.e. uncomment run without opening browser)
-        # self.chrome_options.add_argument("--headless")
+        # self.options.add_argument("--headless")
         
         # Setup webdriver
+        self.options.add_argument("--force-device-scale-factor=0.75") 
+        self.options.add_argument('--log-level=1')
+        
         self.driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), 
-            options=self.chrome_options
+            options=self.options
         )
+        
+        
         # Setup username passwd urls
         self.username = username
         self.password = password
@@ -42,7 +47,7 @@ class LibraryBooking:
         self.url_login = self.url + "admin.php"
         self.url_area = self.url + "day.php?area="
         self.books = self.url + "edit_entry.php?"
-        
+
 
     def login(self):
         """
@@ -134,52 +139,40 @@ class LibraryBooking:
         
     def find_available_seat(self, area_name):
         """
-        Find an available seat in the specified area
+        Find all available seats in the specified area.
         
         :param area_name: Name of the area to book
-        :return: WebElement of the available seat or None
+        :return: List of available seat names or None if no seats are available
         """
         try:
-            """
-            # Find bookings with specific classes
-            my_uncheckin_bookings = self.driver.find_elements(
-                By.CLASS_NAME, "I.tentative.writable"
-            )
-            my_checkin_bookings = self.driver.find_elements(
-                By.CLASS_NAME, "E.writable"
-            )
-            
-            # Combine and return bookings
-            return {
-                'unchecked_bookings': my_uncheckin_bookings,
-                'checked_bookings': my_checkin_bookings
-            }
-            """
             # Get area number from the dictionary
             area_num = self.AREAS.get(area_name)
             if not area_num:
                 print(f"Invalid area name: {area_name}")
                 return None
-            
-            time.sleep(3)
 
             # Navigate to the area's day view
             self.driver.get(f"{self.url}day.php?area={area_num}")
 
-            # Find available seats (with class 'new')
-            available_seats = self.driver.find_elements(By.CLASS_NAME, "new")
-            
-            if not available_seats:
+            # Wait for the table to load
+            table = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//table[@class='dwm_main_6 footable footable-1 breakpoint-lg' and @id='day_main']"))
+            )
+
+            # Find all available seat names
+            available_seats = table.find_elements(By.XPATH, "//td[contains(@class, 'new')]")
+            seat_names = [seat.get_attribute("data-room") for seat in available_seats]
+
+            if not seat_names:
                 print(f"No available seats in {area_name}")
                 return None
 
-            # Return the first available seat
-            return available_seats[0]
+            return seat_names
 
         except Exception as e:
-            print(f"Error finding available seat: {e}")
+            print(f"Error finding available seats: {e}")
             return None
-
+    
     def check_my_bookings(self):
         """
         Check current user's bookings
@@ -250,10 +243,10 @@ if __name__ == "__main__":
 
         booking = LibraryBooking(username, password)
         
-
         if booking.login():
-           booking.redirect_to_area('G/F Quiet Zone & PC Area')
-           time.sleep(2)
+           #booking.redirect_to_area('G/F Quiet Zone & PC Area')
+           time.sleep(2) 
+           
            booking.find_available_seat('G/F Quiet Zone & PC Area')
             # Check current bookings
            """ 
@@ -262,9 +255,9 @@ if __name__ == "__main__":
                 print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
                 print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
             """
-    
+        time.sleep(5)
     except Exception as e:
         print(f"An error occurred: {e}")
     
-    #finally:
-        #booking.close()
+    finally:
+        booking.close()
