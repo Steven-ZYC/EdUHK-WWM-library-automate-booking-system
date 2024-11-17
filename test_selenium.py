@@ -21,25 +21,28 @@ class LibraryBooking:
 
     def __init__(self, username, password):
         # Setup Chrome
-        #self.chrome_options = webdriver.ChromeOptions()
+        self.chrome_options = webdriver.ChromeOptions()
+
+        # Setup Edge
+        #self.edge_options = webdriver.EdgeOptions()
+
         #self.chrome_options.add_argument("--disable-dev-shm-usage")
         # options for headless mode (i.e. uncomment run without opening browser)
         # self.chrome_options.add_argument("--headless")
         
-        # Setup Edge
-        self.edge_options = webdriver.EdgeOptions()
-        
         # Setup webdriver
-        self.driver = webdriver.Edge(
-            service=Service(EdgeChromiumDriverManager().install()), 
-            options=self.edge_options
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()), 
+            options=self.chrome_options
         )
         # Setup username passwd urls
         self.username = username
         self.password = password
         self.url = "https://app.lib.eduhk.hk/booking/"
         self.url_login = self.url + "admin.php"
+        self.url_area = self.url + "day.php?area="
         self.books = self.url + "edit_entry.php?"
+        
 
     def login(self):
         """
@@ -65,7 +68,7 @@ class LibraryBooking:
             WebDriverWait(self.driver, 1).until(
                 EC.url_changes(self.url_login)
             )
-            time.sleep(2)    
+            time.sleep(2)  
             print("Login successful!")
             return True
             
@@ -82,18 +85,53 @@ class LibraryBooking:
         """
     
         try:
-            WebDriverWait(self.driver, 10).until(
+            """
+            area_num = self.AREAS.get(area_name)
+            if not area_num:
+                print(f"Invalid area name: {area_name}")
+                return None
+
+            # Navigate to the area's day view
+            self.driver.get(f"{self.url}day.php?area={area_num}")
+
+            # Find available seats (with class 'new')
+            available_seats = self.driver.find_elements(By.CLASS_NAME, "new")
+            
+            if not available_seats:
+                print(f"No available seats in {area_name}")
+                return None
+
+            # Return the first available seat
+            return available_seats[0]
+            """
+            # Wait for navigation bar element to be present
+            WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="bs-example-navbar-collapse-1"]/ul/li[1]/a'))
             )
+            
+            # Hover over and click to expand dropdown menu
             navbar_button = self.driver.find_element(By.XPATH, '//*[@id="bs-example-navbar-collapse-1"]/ul/li[1]/a')
             actions = ActionChains(self.driver)
             actions.move_to_element(navbar_button).perform()
             navbar_button.click()
-
+            
+            # Locate and click specific area by name
+            try:
+                area_element = WebDriverWait(self.driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, f"//ul[@class='dropdown-menu']//a[contains(text(), '{area_name}')]"))
+                )
+                area_element.click()
+                print(f"Successfully navigated to {area_name}")
+                return True
+            
+            except Exception as e:
+                print(f"Area {area_name} not found: {e}")
+                return False
+    
         except Exception as e:
-            print(f" An error occurred in redirecting to choose an area：{e}")  
-
-     
+            print(f"Error navigating to area selection page: {e}")
+            return False
+        
     def find_available_seat(self, area_name):
         """
         Find an available seat in the specified area
@@ -211,9 +249,12 @@ if __name__ == "__main__":
         password = input("Enter your EdUHK password: ")
 
         booking = LibraryBooking(username, password)
-        booking.redirect_to_area('G/F Quiet Zone & PC Area')
+        
 
         if booking.login():
+           booking.redirect_to_area('G/F Quiet Zone & PC Area')
+           time.sleep(2)
+           booking.find_available_seat('G/F Quiet Zone & PC Area')
             # Check current bookings
            """ 
            my_bookings = booking.check_my_bookings()
