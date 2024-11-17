@@ -1,4 +1,4 @@
-  import argparse
+import argparse
 from test_selenium import LibraryBooking
 import time
 
