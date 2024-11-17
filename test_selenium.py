@@ -192,25 +192,45 @@ class LibraryBooking:
             print(f"Error finding available seats: {e}")
             return None
     
-    def booking(self,seat_name,seat_time):
+    def booking_seats(self, area_name, seat_name, time_slot_index):
         """
-        Book the specified seat at the given time slot.
+        Book a seat in the specified area and time slot.
         
-        :param seat_name: Name of the seat to book
-        :param time_slot: Time slot to book
+        :param area_name: Name of the area to book
+        :param seat_name: Name of the seat to book (can be in the format "S01", "S01 (With PC)", "S01 (With Mac)", "S01 (With PC & Wacom)", or just "S01")
+        :param time_slot_index: Index of the time slot to book (starts from 1)
+        :return: True if the booking is successful, False otherwise
         """
         try:
-            time_slot = seat_details["time_slots"]
-            # Find the booking link for the seat and time slot
-            booking_link = self.get_booking_link(seat_name, seat_details)
+            # Find available seats in the specified area
+            available_seats = self.find_available_seat(area_name)
+
+            # Check if the normalized seat name is available
+            if seat_name in available_seats:
+                time_slots = available_seats[seat_name]['time_slots']
+                booking_links = available_seats[seat_name]['booking_links']
             
-            # Navigate to the booking link and perform the booking
-            self.driver.get(booking_link)
-            # Add your booking logic here
-            print(f"Booked seat {seat_name} at {time_slot}")
-        
+                # Verify that the time slot index is valid
+                if 0 < time_slot_index <= len(time_slots):
+                    # Navigate to the booking link
+                    self.driver.get(booking_links[time_slot_index - 1])
+                    
+                    # Find and click the button with the specified XPATH
+                    button = self.driver.find_element(By.XPATH, "//*[@id='main']/div[7]/div/button[1]")
+                    button.click()
+                    
+                    # Implement any additional booking logic here
+                    
+                    print(f"Booking successful for seat '{seat_name}' at {time_slots[time_slot_index - 1]}.")
+                    return True
+                else:
+                    print(f"Invalid time slot index: {time_slot_index}")
+            else:
+                print(f"Seat '{seat_name}' is not available in the '{area_name}' area.")
         except Exception as e:
             print(f"Error booking seat: {e}")
+        
+        return False
 
     def check_my_bookings(self):
         """
@@ -297,6 +317,9 @@ if __name__ == "__main__":
                 
                 if i == max_output:
                     break
+
+            booking.login()
+            booking.booking_seats('G/F Quiet Zone & PC Area','S01 (With PC)',5)    
 
         else:
             print("No available seats found.")
