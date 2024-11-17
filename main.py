@@ -1,6 +1,5 @@
 import argparse
 from test_selenium import LibraryBooking
-import time
 
 def main():
     #input id & password

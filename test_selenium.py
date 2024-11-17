@@ -159,16 +159,31 @@ class LibraryBooking:
                 EC.presence_of_element_located((By.XPATH, "//table[@class='dwm_main_6 footable footable-1 breakpoint-lg' and @id='day_main']"))
             )
 
-            # Find all available seat names
-            available_seats = table.find_elements(By.XPATH, "//td[contains(@class, 'new')]")
-            seat_names = [seat.get_attribute("data-room") for seat in available_seats]
+            # Extract the header information
+            header_row = table.find_element(By.XPATH, "//thead/tr")
+            seat_names = [label.text for label in header_row.find_elements(By.XPATH, ".//th[contains(@class, 'row_labels')]")]
+            time_slots = [slot.text for slot in header_row.find_elements(By.XPATH, ".//th[not(contains(@class, 'row_labels'))]")]
 
-            if not seat_names:
-                print(f"No available seats in {area_name}")
+            # Find the data rows
+            data_rows = table.find_elements(By.XPATH, "//tbody/tr[contains(@class, 'even_row')]")
+
+            # Check availability for each seat
+            available_seats = {}
+            for row in data_rows:
+                seat_name = row.find_element(By.XPATH, ".//td[contains(@class, 'row_labels')]").text
+                available_slots = []
+                for i, slot in enumerate(row.find_elements(By.XPATH, ".//td[not(contains(@class, 'row_labels'))]")):
+                    if 'new' in slot.get_attribute('class'):
+                        available_slots.append(time_slots[i])
+                if available_slots:
+                    available_seats[seat_name] = available_slots
+
+            if not available_seats:
+                print("No available seats found.")
                 return None
 
-            return seat_names
-
+            return available_seats
+        
         except Exception as e:
             print(f"Error finding available seats: {e}")
             return None
@@ -243,18 +258,19 @@ if __name__ == "__main__":
 
         booking = LibraryBooking(username, password)
         
-        if booking.login():
-           #booking.redirect_to_area('G/F Quiet Zone & PC Area')
-           time.sleep(2) 
+        #booking.redirect_to_area('G/F Quiet Zone & PC Area')
+        time.sleep(1) 
            
-           booking.find_available_seat('G/F Quiet Zone & PC Area')
-            # Check current bookings
-           """ 
-           my_bookings = booking.check_my_bookings()
-            if my_bookings:
-                print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
-                print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
-            """
+        available_seats = booking.find_available_seat('G/F Quiet Zone & PC Area')
+            
+        if available_seats:
+            print("Available seats:")
+            for seat, time_slots in available_seats.items():
+                print(f"Seat: {seat}, Available time slots: {', '.join(time_slots)}")
+        else:
+            print("No available seats found.")
+        
+       
         time.sleep(5)
     except Exception as e:
         print(f"An error occurred: {e}")
