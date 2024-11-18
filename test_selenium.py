@@ -193,7 +193,7 @@ class LibraryBooking:
                     }
             end_time = time.time()
             execution_time = end_time - start_time
-            print(f"Detailed data is loaded! Execution time: {execution_time} seconds")
+            print(f"Detailed data is loaded! \nExecution time: {execution_time} seconds")
 
             if not available_seats:
                 print("No available seats found.")
