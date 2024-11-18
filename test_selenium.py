@@ -166,9 +166,12 @@ class LibraryBooking:
             header_row = table.find_element(By.XPATH, "/html/body/div[2]/div[2]/div[3]/table/thead")
             seat_names = [label.text for label in header_row.find_elements(By.XPATH, ".//th[contains(@class, 'row_labels')]")]
             time_slots = [slot.text for slot in header_row.find_elements(By.XPATH, ".//th[not(contains(@class, 'row_labels'))]")]
-            print("Header information loaded!")
+            # for debug  print("Header information loaded!")
 
+            
             # Find the data rows
+            print("It takes about 1 min to load detailed data")
+            start_time = time.time()
             data_rows = table.find_elements(By.XPATH, "//tbody/tr[contains(@class, 'even_row')]")
             
             # Check availability for each seat
@@ -188,7 +191,9 @@ class LibraryBooking:
                         "time_slots": available_slots,
                         "booking_links": booking_links
                     }
-            print("Detailed data is loaded!")
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"Detailed data is loaded! Execution time: {execution_time} seconds")
 
             if not available_seats:
                 print("No available seats found.")
@@ -330,8 +335,15 @@ if __name__ == "__main__":
 
         else:
             print("No available seats found.")
+        time.sleep(2)
         
-        time.sleep(3)
+        
+        # Check current bookings
+        my_bookings = booking.check_my_bookings()
+        if my_bookings:
+            print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
+            print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
+    
     except Exception as e:
         print(f"An error occurred: {e}")
         
