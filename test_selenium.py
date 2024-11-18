@@ -303,7 +303,8 @@ if __name__ == "__main__":
         
         #booking.redirect_to_area('G/F Quiet Zone & PC Area')
         time.sleep(1) 
-           
+        booking.login()
+
         available_seats = booking.find_available_seat('G/F Quiet Zone & PC Area')
             
         if available_seats:
@@ -318,7 +319,7 @@ if __name__ == "__main__":
                 if i == max_output:
                     break
 
-            booking.login()
+            
             booking.booking_seats('G/F Quiet Zone & PC Area','S01 (With PC)',5)    
 
         else:
