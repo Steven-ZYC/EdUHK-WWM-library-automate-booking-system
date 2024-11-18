@@ -1,4 +1,5 @@
 import argparse
+import time
 from test_selenium import LibraryBooking
 
 def main():
