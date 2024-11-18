@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import time
-import os
+
 
 class LibraryBooking:
     AREAS = {
@@ -309,7 +309,7 @@ if __name__ == "__main__":
             
         if available_seats:
             max_output = 10
-            
+            print(f"Seat number:{"1":^24}{"2":^15}{"3":^15}{"4":^15}{"5":^15}{"6":^15}{"7":^15}{"8":^15}{"9":^15}{"10":^15}")
             print("Available seats:")
             for i, (seat, details) in enumerate(available_seats.items(), start=1):
                 print(f"Seat: {seat}")
@@ -319,8 +319,8 @@ if __name__ == "__main__":
                 if i == max_output:
                     break
 
-            
-            booking.booking_seats('G/F Quiet Zone & PC Area','S01 (With PC)',5)    
+            for n in range(0,8):
+                booking.booking_seats('G/F Quiet Zone & PC Area','S47 (With PC)',n)    
 
         else:
             print("No available seats found.")
