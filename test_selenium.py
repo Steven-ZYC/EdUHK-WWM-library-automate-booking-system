@@ -150,14 +150,20 @@ class LibraryBooking:
 
             # Navigate to the area's day view
             self.driver.get(f"{self.url}day.php?area={area_num}")
+            
+            # Force the website to load 
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.5)
+            self.driver.execute_script("window.scrollTo(0, 0);")
 
             # Wait for the table to load
             table = WebDriverWait(self.driver, 1).until(
-                EC.presence_of_element_located((By.XPATH, "//table[@class='dwm_main_6 footable footable-1 breakpoint-lg' and @id='day_main']"))
+                EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div[2]/div[3]"))
             )
+            print("timetable loading!")
 
             # Extract the header information
-            header_row = table.find_element(By.XPATH, "//thead/tr")
+            header_row = table.find_element(By.XPATH, "/html/body/div[2]/div[2]/div[3]/table/thead")
             seat_names = [label.text for label in header_row.find_elements(By.XPATH, ".//th[contains(@class, 'row_labels')]")]
             time_slots = [slot.text for slot in header_row.find_elements(By.XPATH, ".//th[not(contains(@class, 'row_labels'))]")]
 
@@ -205,7 +211,7 @@ class LibraryBooking:
             # Find available seats in the specified area
             available_seats = self.find_available_seat(area_name)
 
-            # Check if the normalized seat name is available
+            # Check if the seat name is available
             if seat_name in available_seats:
                 time_slots = available_seats[seat_name]['time_slots']
                 booking_links = available_seats[seat_name]['booking_links']
@@ -228,7 +234,7 @@ class LibraryBooking:
             else:
                 print(f"Seat '{seat_name}' is not available in the '{area_name}' area.")
         except Exception as e:
-            print(f"Error booking seat: {e}")
+            print(f"Error booking seat. ")
         
         return False
 
@@ -319,7 +325,7 @@ if __name__ == "__main__":
                 if i == max_output:
                     break
 
-            for n in range(0,8):
+            for n in range(1,8):
                 booking.booking_seats('G/F Quiet Zone & PC Area','S47 (With PC)',n)    
 
         else:
