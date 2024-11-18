@@ -160,16 +160,17 @@ class LibraryBooking:
             table = WebDriverWait(self.driver, 1).until(
                 EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div[2]/div[3]"))
             )
-            print("timetable loading!")
+            print("Timetable is loaded!")
 
             # Extract the header information
             header_row = table.find_element(By.XPATH, "/html/body/div[2]/div[2]/div[3]/table/thead")
             seat_names = [label.text for label in header_row.find_elements(By.XPATH, ".//th[contains(@class, 'row_labels')]")]
             time_slots = [slot.text for slot in header_row.find_elements(By.XPATH, ".//th[not(contains(@class, 'row_labels'))]")]
+            print("Header information loaded!")
 
             # Find the data rows
             data_rows = table.find_elements(By.XPATH, "//tbody/tr[contains(@class, 'even_row')]")
-
+            
             # Check availability for each seat
             available_seats = {}
             for row in data_rows:
@@ -187,6 +188,7 @@ class LibraryBooking:
                         "time_slots": available_slots,
                         "booking_links": booking_links
                     }
+            print("Detailed data is loaded!")
 
             if not available_seats:
                 print("No available seats found.")
@@ -208,9 +210,6 @@ class LibraryBooking:
         :return: True if the booking is successful, False otherwise
         """
         try:
-            # Find available seats in the specified area
-            available_seats = self.find_available_seat(area_name)
-
             # Check if the seat name is available
             if seat_name in available_seats:
                 time_slots = available_seats[seat_name]['time_slots']
@@ -241,12 +240,13 @@ class LibraryBooking:
     def check_my_bookings(self):
         """
         Check current user's bookings
-        :return: List of current bookings
+        :return: booking_details{}   #i.e.List of current bookings
         """
 
         try:
             # Navigate to my bookings
-            element =  WebDriverWait(self.driver, 3).until(
+            self.driver.get(f"{self.url}my_booking.php?")
+            element =  WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.XPATH, "//*[@id='bs-example-navbar-collapse-1']/ul/li[5]/a"))
                 )
             mybooking = self.driver.find_element(By.XPATH, "//*[@id='bs-example-navbar-collapse-1']/ul/li[5]/a")
@@ -310,9 +310,9 @@ if __name__ == "__main__":
         #booking.redirect_to_area('G/F Quiet Zone & PC Area')
         time.sleep(1) 
         booking.login()
-
+        
         available_seats = booking.find_available_seat('G/F Quiet Zone & PC Area')
-            
+           
         if available_seats:
             max_output = 10
             print(f"Seat number:{"1":^24}{"2":^15}{"3":^15}{"4":^15}{"5":^15}{"6":^15}{"7":^15}{"8":^15}{"9":^15}{"10":^15}")
@@ -325,7 +325,7 @@ if __name__ == "__main__":
                 if i == max_output:
                     break
 
-            for n in range(1,8):
+            for n in range(1,10):
                 booking.booking_seats('G/F Quiet Zone & PC Area','S47 (With PC)',n)    
 
         else:
@@ -334,6 +334,6 @@ if __name__ == "__main__":
         time.sleep(3)
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+        
     finally:
         booking.close()
