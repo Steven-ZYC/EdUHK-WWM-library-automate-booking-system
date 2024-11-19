@@ -23,6 +23,7 @@ To enhance our EdUHK students’ experience and streamline our WWM Library’s b
    - [x] User-Friendly Interface: A lite CLI for easy access and navigation.
    - [x] Automated Booking: Students can set up recurring bookings based on their schedules.
    - [x] High efficiency: Students can book a series if seats or facilities within a second in stead of click the webpage one by one for a few minutes.
+   - [x] Automatic check-in your current booking (using the workstation in library is a must).
 
    ## Conclusion
 
