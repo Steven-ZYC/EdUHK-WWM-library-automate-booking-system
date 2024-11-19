@@ -47,6 +47,7 @@ class LibraryBooking:
         self.url_login = self.url + "admin.php"
         self.url_area = self.url + "day.php?area="
         self.books = self.url + "edit_entry.php?"
+        self.url_chekin = self.url + "checkin_entry.php?"
 
 
     def login(self):
@@ -299,7 +300,14 @@ class LibraryBooking:
         except Exception as e:
             print(f"Error checking bookings: {e}")
             return None
-    
+
+
+    def chek_in(self):
+        try：
+            self.driver.get(self.url_checkin)
+        except Exception as e:
+            print("You are not using the workstation in library\n Automatic checkin proccess denied")
+
     def close(self):
         self.driver.quit()
 
@@ -343,7 +351,11 @@ if __name__ == "__main__":
         if my_bookings:
             print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
             print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
-    
+        
+        #check in current booking
+        chckin = booking.chek_in
+        if checkin:
+            print("Detect that you are using the workstation in library\n You are cheked in！")
     except Exception as e:
         print(f"An error occurred: {e}")
         
