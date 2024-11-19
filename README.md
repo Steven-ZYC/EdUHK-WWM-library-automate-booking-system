@@ -16,7 +16,7 @@ To enhance our EdUHK students’ experience and streamline our WWM Library’s b
 1.	Simplify Booking Process: Create an intuitive interface for students to book library seats effortlessly.
 2.	Real-time Availability: Provide real-time information on seat availability, reducing time spent searching for spaces.
 3.	Automated Reservations: Enable regular bookings for students, accommodating their study schedules.
-4. User Notifications: Generate a calendar file that students can import to most of calendar apps, thus can remind individuals for upcoming bookings.
+4. User Notifications: Generate a calendar file that students can import to most of calendar apps, thus can remind individuals for upcoming bookings. (TBA)
 
    ## Features
 
