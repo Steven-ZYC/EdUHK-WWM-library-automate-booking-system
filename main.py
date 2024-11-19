@@ -1,11 +1,11 @@
-import argparse
+import getpass
 import time
 from test_selenium import LibraryBooking
 
 def main():
     #input id & password
     username = input("Enter your EdUHK username: ")
-    password = argparse.getpass("Enter your EdUHK password: (Your input wouldn't display)")
+    password = getpass.getpass("Enter your EdUHK password: (Your input wouldn't display)")
     #Inqire the area  
     area = input("There are there areas that you can choose to book,\nplease press the number below to choose\n 1: '4/F Research Commons A'\n 2:'4/F Research Commons B'\n 3: 'G/F Quiet Zone & PC Area'\n")
     booking = LibraryBooking(username, password) 
