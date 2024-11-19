@@ -302,12 +302,13 @@ class LibraryBooking:
             return None
 
 
-    def chek_in(self):
-        try：
+    def check_in(self):  
+        try:
             self.driver.get(self.url_checkin)
         except Exception as e:
-            print("You are not using the workstation in library\n Automatic checkin proccess denied")
-
+            print("You are not using the workstation in library\n Automatic check-in process denied")
+        
+        
     def close(self):
         self.driver.quit()
 
@@ -345,15 +346,17 @@ if __name__ == "__main__":
             print("No available seats found.")
         time.sleep(2)
         
-        
+        """
         # Check current bookings
         my_bookings = booking.check_my_bookings()
         if my_bookings:
             print(f"Unchecked bookings: {len(my_bookings['unchecked_bookings'])}")
             print(f"Checked bookings: {len(my_bookings['checked_bookings'])}")
-        
+        """
+
         #check in current booking
-        chckin = booking.chek_in
+        checkin = booking.chek_in()
+        
         if checkin:
             print("Detect that you are using the workstation in library\n You are cheked in！")
     except Exception as e:
