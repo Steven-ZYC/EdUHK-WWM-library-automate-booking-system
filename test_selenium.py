@@ -240,7 +240,7 @@ class LibraryBooking:
             else:
                 print(f"Seat '{seat_name}' is not available in the '{area_name}' area.")
         except Exception as e:
-            print(f"Error booking seat. {e}")
+            print(f"Error booking seat. ")
         
         return False
 
