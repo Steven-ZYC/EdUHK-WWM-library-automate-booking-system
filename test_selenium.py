@@ -48,6 +48,7 @@ class LibraryBooking:
         self.url_area = self.url + "day.php?area="
         self.books = self.url + "edit_entry.php?"
         self.url_chekin = self.url + "checkin_entry.php?"
+        self.available_seats = {}
 
 
     def login(self):
@@ -101,7 +102,7 @@ class LibraryBooking:
             self.driver.get(f"{self.url}day.php?area={area_num}")
 
             # Find available seats (with class 'new')
-            available_seats = self.driver.find_elements(By.CLASS_NAME, "new")
+            self.available_seats = self.driver.find_elements(By.CLASS_NAME, "new")
             
             if not available_seats:
                 print(f"No available seats in {area_name}")
@@ -176,7 +177,7 @@ class LibraryBooking:
             data_rows = table.find_elements(By.XPATH, "//tbody/tr[contains(@class, 'even_row')]")
             
             # Check availability for each seat
-            available_seats = {}
+            self.available_seats = {}
             for row in data_rows:
                 seat_name = row.find_element(By.XPATH, ".//td[contains(@class, 'row_labels')]").text
                 available_slots = []
@@ -188,7 +189,7 @@ class LibraryBooking:
                         link_element = slot.find_element(By.XPATH, ".//a")
                         booking_links.append(link_element.get_attribute("href"))
                 if available_slots:
-                    available_seats[seat_name] = {
+                    self.available_seats[seat_name] = {
                         "time_slots": available_slots,
                         "booking_links": booking_links
                     }
@@ -196,11 +197,11 @@ class LibraryBooking:
             execution_time = end_time - start_time
             print(f"Detailed data is loaded! \nExecution time: {execution_time} seconds")
 
-            if not available_seats:
+            if not self.available_seats:
                 print("No available seats found.")
                 return None
 
-            return available_seats
+            return self.available_seats
         
         except Exception as e:
             print(f"Error finding available seats: {e}")
@@ -217,9 +218,9 @@ class LibraryBooking:
         """
         try:
             # Check if the seat name is available
-            if seat_name in available_seats:
-                time_slots = available_seats[seat_name]['time_slots']
-                booking_links = available_seats[seat_name]['booking_links']
+            if seat_name in self.available_seats:
+                time_slots = self.available_seats[seat_name]['time_slots']
+                booking_links = self.available_seats[seat_name]['booking_links']
             
                 # Verify that the time slot index is valid
                 if 0 < time_slot_index <= len(time_slots):
@@ -239,7 +240,7 @@ class LibraryBooking:
             else:
                 print(f"Seat '{seat_name}' is not available in the '{area_name}' area.")
         except Exception as e:
-            print(f"Error booking seat. ")
+            print(f"Error booking seat. {e}")
         
         return False
 
@@ -306,7 +307,7 @@ class LibraryBooking:
         try:
             self.driver.get(self.url_checkin)
         except Exception as e:
-            print("You are not using the workstation in library\n Automatic check-in process denied")
+            print("\nYou are not using the workstation in library\n Automatic check-in process denied")
         
         
     def close(self):
@@ -338,9 +339,13 @@ if __name__ == "__main__":
                 
                 if i == max_output:
                     break
-
+            
+            seat_name = str(input("Then choose the seat you want to book (full name reqired e.g S57 (With PC))\n"))
+            print("Seat name entered:", seat_name)
+            
             for n in range(1,10):
-                booking.booking_seats('G/F Quiet Zone & PC Area','S47 (With PC)',n)    
+                print(f"Attempting to book time slot {n}...")
+                booking.booking_seats('G/F Quiet Zone & PC Area',seat_name,n)    
 
         else:
             print("No available seats found.")
@@ -355,7 +360,7 @@ if __name__ == "__main__":
         """
 
         #check in current booking
-        checkin = booking.chek_in()
+        checkin = booking.check_in()
         
         if checkin:
             print("Detect that you are using the workstation in library\n You are cheked in！")
