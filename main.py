@@ -43,14 +43,11 @@ def main():
                        
                     for i, (seat, time_slots) in enumerate(available_seats.items(), start=1):
                         print(f"Seat: {seat}")
-
-                        for i, (seat, details) in enumerate(available_seats.items(), start=1):
-                            print(f"Seat: {seat}")
-                            print(f"Available time slots: {', '.join(details['time_slots'][1:])}")
-                            print()
-                            
-                            if i == max_output:
-                                break
+                        print(f"Available time slots: {', '.join(details['time_slots'][1:])}")
+                        print()        
+                        if i == max_output:
+                            break
+                
                 elif mode == "2":
                     print(f"Seat number:{"1":^24}{"2":^15}{"3":^15}{"4":^15}{"5":^15}{"6":^15}{"7":^15}{"8":^15}{"9":^15}{"10":^15}")
                     print("Available seats:")
