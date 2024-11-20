@@ -11,7 +11,6 @@ def main():
     booking = LibraryBooking(username, password) 
     
     try:
-        time.sleep(1)
         if booking.login():
 
             #Choose area
@@ -70,7 +69,7 @@ def main():
         
         time.sleep(1)
         
-        checkin = booking.chek_in()
+        checkin = booking.check_in()
 
         if checkin:
             print("Detect that you are using the workstation in library\n You are cheked in！")
