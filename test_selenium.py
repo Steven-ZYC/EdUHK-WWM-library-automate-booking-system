@@ -48,7 +48,11 @@ class LibraryBooking:
         self.url_area = self.url + "day.php?area="
         self.books = self.url + "edit_entry.php?"
         self.url_chekin = self.url + "checkin_entry.php?"
+
         self.available_seats = {}
+        self.time_slots = []
+        self.booking_links = []
+        
 
 
     def login(self):
@@ -217,15 +221,16 @@ class LibraryBooking:
         :return: True if the booking is successful, False otherwise
         """
         try:
+            self.time_slot_index = time_slot_index
             # Check if the seat name is available
             if seat_name in self.available_seats:
-                time_slots = self.available_seats[seat_name]['time_slots']
-                booking_links = self.available_seats[seat_name]['booking_links']
+                self.time_slots = self.available_seats[seat_name]['time_slots']
+                self.booking_links = self.available_seats[seat_name]['booking_links']
             
                 # Verify that the time slot index is valid
-                if 0 < time_slot_index <= len(time_slots):
+                if 0 < time_slot_index <= len(self.time_slots):
                     # Navigate to the booking link
-                    self.driver.get(booking_links[time_slot_index - 1])
+                    self.driver.get(self.booking_links[time_slot_index - 1])
                     
                     # Find and click the button with the specified XPATH
                     button = self.driver.find_element(By.XPATH, "//*[@id='main']/div[7]/div/button[1]")
@@ -233,7 +238,7 @@ class LibraryBooking:
                     
                     # Implement any additional booking logic here
                     
-                    print(f"Booking successful for seat '{seat_name}' at {time_slots[time_slot_index - 1]}.")
+                    print(f"Booking successful for seat '{seat_name}' at {self.time_slots[time_slot_index - 1]}.")
                     return True
                 else:
                     print(f"Invalid time slot index: {time_slot_index}")
