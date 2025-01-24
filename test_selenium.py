@@ -10,7 +10,6 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import time
 
 
-
 class LibraryBooking:
     AREAS = {
         '4/F Research Commons A': 1,
